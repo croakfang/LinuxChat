@@ -59,12 +59,31 @@ public class ChatRecord {
 
     class ChatMessage{
         public ChatMessage(Date date, boolean IsMe, String Content){
-            msgDate = date;
+            Date = date;
             isMe = IsMe;
             content = Content;
         }
-        Date msgDate;
+        Date Date;
         Boolean isMe;
         String content;
+    }
+
+    public static void GetUserList(){
+        File file = new File("LinuxChat_data");
+        if(file.exists()&&file.isDirectory()){
+            File[] tempList = file.listFiles();
+            for(File cfile :tempList){
+                if(cfile.isDirectory())
+                    System.out.println("用户记录："+cfile.getName());
+            }
+        }
+    }
+
+    public static void RemoveUserList(String id){
+        File file = new File("LinuxChat_data/"+id);
+        if(file.exists()&&file.isDirectory()&&!id.equals("")){
+            file.delete();
+            System.out.println("用户"+id+"资料已删除");
+        }else System.out.println("未找到用户");
     }
 }

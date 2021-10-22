@@ -5,6 +5,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -22,7 +24,6 @@ public class MySocket {
     private int serverPort = 16060;
     private int fileSendPort = 16061;
     private int fileRecvPort = 16062;
-    private CustomConfig config;
     private ChatRecord chatRecord;
     private boolean isFileSend;
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
@@ -30,7 +31,7 @@ public class MySocket {
 
 
     public void Initialization() {
-        config = new CustomConfig();
+        CustomConfig config = new CustomConfig();
         config.GetConfig();
         serverPort = config.serverPort;
         connectPort = config.connectPort;
@@ -40,9 +41,7 @@ public class MySocket {
         ConnectThread = new Thread(this::Connect);
         ServerThread.start();
         ConnectThread.start();
-        System.out.println("正在等待连接(端口：" + serverPort + ")...");
-        System.out.println("你也可以输入IP主动连接:");
-        System.out.println("(可以带端口号 如127.0.0.1:8080)");
+        System.out.println("正在等待连接,可以输入IP主动连接:");
         GetInput();
     }
 
@@ -92,7 +91,7 @@ public class MySocket {
 
                 int port = strArr.length > 1 ? Integer.parseInt(strArr[1]) : serverPort;
                 if (serverPort == port) {
-                    System.out.println("该端口是服务器端口，无法连接");
+                    System.out.println("地址或端口无效,请重新输入");
                     continue;
                 }
 
@@ -130,7 +129,7 @@ public class MySocket {
         while (inputLevel < 0) {
             try {
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
         }
         if (inputLevel <= level) {
@@ -141,7 +140,7 @@ public class MySocket {
     }
 
     private void GetInput() {
-        while (true) {
+        while (!Thread.interrupted()) {
             inputNext = scanner.nextLine();
             if (inputNext.matches("^##H")) {
                 HelpInfo.ShowHelp();
@@ -149,7 +148,11 @@ public class MySocket {
                 ShowPort();
             } else if (inputNext.matches("^##Q")) {
                 CloseConnect();
-            } else
+            } else if (inputNext.matches("^##R")) {
+                ChatRecord.GetUserList();
+            }else if (inputNext.matches("^##D.*")) {
+                ChatRecord.RemoveUserList(inputNext.substring(3));
+            }else
                 inputLevel = CurSocket == null ? 1 : 2;
         }
     }
@@ -160,8 +163,9 @@ public class MySocket {
         try {
             BufferedWriter os = new BufferedWriter
                     (new OutputStreamWriter(CurSocket.getOutputStream(), StandardCharsets.UTF_8));
-            while (true) {
+            while (!Thread.interrupted()) {
                 String temp = GetNextInput(2);
+
                 if (temp.matches("^##F.*")) {
                     String name = FileSend(temp.substring(3));
                     if (!name.equals("")) {
@@ -170,7 +174,12 @@ public class MySocket {
                         os.flush();
                         chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[发送文件：" + name + "]");
                     } else System.out.println("文件不存在,或已有文件发送/接收中");
-                } else {
+                } else if(temp.matches("^##S.*")){
+                    SearchByChat(temp.substring(3));
+                }else if(temp.matches("^##T.*")){
+                    SearchByTime(temp.substring(3));
+                }
+                else {
                     os.write(temp + "\n");
                     os.flush();
                     chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, temp);
@@ -186,7 +195,7 @@ public class MySocket {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader
                     (CurSocket.getInputStream(), StandardCharsets.UTF_8));
-            while (true) {
+            while (!Thread.interrupted()) {
                 String mess = br.readLine();
                 if (mess.matches("^##F.*")) {
                     FileRecv(mess.substring(3));
@@ -227,10 +236,10 @@ public class MySocket {
         chatRecord = ChatRecord.GetChatRecord(CurSocket.getInetAddress().getHostAddress());
         Date tempLastDate = null;
         ArrayList<ChatRecord.ChatMessage> records = chatRecord.records;
-        for (int i = 0; i < records.size(); i++) {
-            CheckTimeDur(tempLastDate, records.get(i).msgDate);
-            tempLastDate = records.get(i).msgDate;
-            ShowMessage(records.get(i).content, records.get(i).isMe);
+        for (ChatRecord.ChatMessage record : records) {
+            CheckTimeDur(tempLastDate, record.Date);
+            tempLastDate = record.Date;
+            ShowMessage(record.content, record.isMe);
         }
     }
 
@@ -251,7 +260,7 @@ public class MySocket {
 
     private void RecvThread(String name) {
         byte[] inputByte = new byte[1024];
-        int length = 0;
+        int length;
         DataInputStream din = null;
         FileOutputStream fout = null;
         Socket socket = null;
@@ -383,5 +392,38 @@ public class MySocket {
                         "\n文件接收端口:" + fileRecvPort +
                         "\n---------------------------";
         System.out.println(str);
+    }
+
+    private void SearchByChat(String str){
+        if(str.equals("")){
+            System.out.println("请输入有效内容");
+            return;
+        };
+        System.out.println("-----查找结果-----");
+        SimpleDateFormat format = new SimpleDateFormat("[yyyy/MM/dd HH:mm]");
+        for(ChatRecord.ChatMessage msg:chatRecord.records){
+            if(msg.content.contains(str)){
+                System.out.println(format.format(msg.Date)+(msg.isMe?"你：":"对方：")+msg.content);
+            }
+        }
+        System.out.println("------------------");
+    }
+
+    private void SearchByTime(String str){
+        System.out.println("-----查找结果-----");
+        SimpleDateFormat Format= new SimpleDateFormat("yyyy/MM/dd");
+        SimpleDateFormat format = new SimpleDateFormat("[yyyy/MM/dd HH:mm]");
+        try {
+            Date date = Format.parse(str);
+            for(ChatRecord.ChatMessage msg:chatRecord.records){
+                if(Duration.between(msg.Date.toInstant(),date.toInstant()).toDays()<1){
+                    System.out.println(format.format(msg.Date)+(msg.isMe?"你：":"对方：")+msg.content);
+                }
+            }
+        } catch (ParseException e) {
+            System.out.println("请输入有效日期");
+        }
+
+        System.out.println("------------------");
     }
 }
