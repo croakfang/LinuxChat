@@ -17,10 +17,11 @@ public class ChatRecord {
 
     public static ChatRecord GetChatRecord(String id){
         File file = new File("LinuxChat_data/"+id+"/ChatRecord.txt");
+        BufferedReader in = null;
         if(file.exists()){
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                BufferedReader in = new BufferedReader(new FileReader("LinuxChat_data/"+id+"/ChatRecord.txt"));
+                in = new BufferedReader(new FileReader("LinuxChat_data/"+id+"/ChatRecord.txt"));
                 String inStr = "";
                 int num = 0;
                 char ch;
@@ -28,12 +29,14 @@ public class ChatRecord {
                     ch = (char) num;
                     inStr += ch;
                 }
+                in.close();
                 ChatRecord recordList =  gson.fromJson(inStr,new TypeToken<ChatRecord>(){}.getType());
                 if(recordList.records != null)
                 return recordList;
             }catch (Exception e){
                 e.printStackTrace();
             }
+
         }
         return new ChatRecord(id, new ArrayList<>());
     }
@@ -51,6 +54,7 @@ public class ChatRecord {
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(str);
             out.flush();
+            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,6 +86,8 @@ public class ChatRecord {
     public static void RemoveUserList(String id){
         File file = new File("LinuxChat_data/"+id);
         if(file.exists()&&file.isDirectory()&&!id.equals("")){
+            File[] tempList = file.listFiles();
+            for(File cfile :tempList)cfile.delete();
             file.delete();
             System.out.println("用户"+id+"资料已删除");
         }else System.out.println("未找到用户");

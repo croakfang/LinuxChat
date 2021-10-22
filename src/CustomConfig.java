@@ -27,6 +27,7 @@ public class CustomConfig {
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(OutStr);
             out.flush();
+            out.close();
         } catch (IOException e) {
             System.out.println("保存配置文件失败");
             e.printStackTrace();
@@ -50,7 +51,7 @@ public class CustomConfig {
                 this.connectPort = temp.connectPort;
                 this.fileSendPort = temp.fileSendPort;
                 this.fileRecvPort = temp.fileRecvPort;
-
+                in.close();
             } catch (Exception e) {
                 SaveToFile();
                 System.out.println("读取配置文件失败");
