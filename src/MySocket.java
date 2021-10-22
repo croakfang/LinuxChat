@@ -23,6 +23,7 @@ public class MySocket {
     private int fileSendPort = 16061;
     private int fileRecvPort = 16062;
     private CustomConfig config;
+    private ChatRecord chatRecord;
     private boolean isFileSend;
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
     Date LastChatDate = null;
@@ -53,6 +54,7 @@ public class MySocket {
         }
         ServerThread = null;
         ConnectThread = null;
+        chatRecord = null;
         String DesIP = CurSocket.getInetAddress().getHostAddress();
         System.out.println("与" + DesIP + "的聊天已结束");
         CurSocket = null;
@@ -158,12 +160,12 @@ public class MySocket {
                         os.write("[发送文件：" + name + "]" + "\n");
                         os.write("##f" + name + "\n");
                         os.flush();
-                        config.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[发送文件：" + name + "]");
+                        chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[发送文件：" + name + "]");
                     } else System.out.println("文件不存在,或已有文件发送/接收中");
                 } else {
                     os.write(temp + "\n");
                     os.flush();
-                    config.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, temp);
+                    chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, temp);
                 }
             }
         } catch (IOException e) {
@@ -183,7 +185,7 @@ public class MySocket {
                 } else {
                     CheckTimeDur(LastChatDate, GetCurTime());
                     ShowMessage(mess, false);
-                    config.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), false, mess);
+                    chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), false, mess);
                 }
             }
         } catch (Exception e) {
@@ -214,13 +216,13 @@ public class MySocket {
     }
 
     private void CheckChatRecord() {
-        ArrayList<CustomConfig.ChatMessage> msgList =
-                config.GetChatRecord(CurSocket.getInetAddress().getHostAddress());
+        chatRecord = ChatRecord.GetChatRecord(CurSocket.getInetAddress().getHostAddress());
         Date tempLastDate = null;
-        for (int i = 0; i < msgList.size(); i++) {
-            CheckTimeDur(tempLastDate, msgList.get(i).msgDate);
-            tempLastDate = msgList.get(i).msgDate;
-            ShowMessage(msgList.get(i).content, msgList.get(i).isMe);
+        ArrayList<ChatRecord.ChatMessage> records = chatRecord.records;
+        for (int i = 0; i < records.size(); i++) {
+            CheckTimeDur(tempLastDate, records.get(i).msgDate);
+            tempLastDate =records.get(i).msgDate;
+            ShowMessage(records.get(i).content, records.get(i).isMe);
         }
     }
 
@@ -248,9 +250,11 @@ public class MySocket {
         isFileSend = true;
         try {
             try {
+                File file = new File("LinuxChat_data/"+CurSocket.getInetAddress().getHostAddress()+"/"+name);
+                if(!file.exists())file.getParentFile().mkdirs();
                 socket = new Socket(CurSocket.getInetAddress().getHostAddress(), fileSendPort, null, fileRecvPort);
                 din = new DataInputStream(socket.getInputStream());
-                fout = new FileOutputStream(name);
+                fout = new FileOutputStream(file);
                 while (true) {
                     length = din.read(inputByte, 0, inputByte.length);
                     if (length == -1) {
@@ -260,7 +264,7 @@ public class MySocket {
                     fout.flush();
                 }
                 System.out.println("文件(" + name + ")已接收");
-                config.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "文件(" + name + ")已接收");
+                chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "文件(" + name + ")已接收");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -273,8 +277,6 @@ public class MySocket {
                 if (din != null) din.close();
                 if (socket != null) socket.close();
             }
-
-
         } catch (Exception e) {
             System.out.println("接收失败");
         }

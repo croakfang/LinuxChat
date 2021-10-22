@@ -1,5 +1,3 @@
-import java.security.PublicKey;
-
 public class HelpInfo {
 static String Version = "V0.5";
 static String Title =
