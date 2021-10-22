@@ -45,7 +45,7 @@ public class ChatRecord {
         }
         File file = new File("LinuxChat_data/"+id+"/ChatRecord.txt");
         if(!file.exists())file.getParentFile().mkdirs();
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try {
             String str = gson.toJson(this);
             BufferedWriter out = new BufferedWriter(new FileWriter(file));

@@ -78,6 +78,7 @@ public class MySocket {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("服务器初始化失败");
+                    CloseConnect();
                 }
             }
         }
@@ -117,7 +118,7 @@ public class MySocket {
         String DesIP = CurSocket.getInetAddress().getHostAddress();
         System.out.print("来自 " + DesIP + "的用户想要建立连接，确认吗？(y/n)");
         if (GetNextInput(2).equals("y")) {
-            System.out.println("-------------" + DesIP + "-------------");
+            System.out.println("-----------------------" + DesIP + "-----------------------");
             CheckChatRecord();
             CheckTimeDur(LastChatDate, GetCurTime());
             LastChatDate = GetCurTime();
@@ -142,7 +143,14 @@ public class MySocket {
     private void GetInput() {
         while (true) {
             inputNext = scanner.nextLine();
-            inputLevel = CurSocket == null ? 1 : 2;
+            if (inputNext.matches("^##H")) {
+                HelpInfo.ShowHelp();
+            } else if (inputNext.matches("^##P")) {
+                ShowPort();
+            } else if (inputNext.matches("^##Q")) {
+                CloseConnect();
+            } else
+                inputLevel = CurSocket == null ? 1 : 2;
         }
     }
 
@@ -154,11 +162,11 @@ public class MySocket {
                     (new OutputStreamWriter(CurSocket.getOutputStream(), StandardCharsets.UTF_8));
             while (true) {
                 String temp = GetNextInput(2);
-                if (temp.matches("^##f.*")) {
+                if (temp.matches("^##F.*")) {
                     String name = FileSend(temp.substring(3));
                     if (!name.equals("")) {
                         os.write("[发送文件：" + name + "]" + "\n");
-                        os.write("##f" + name + "\n");
+                        os.write("##F" + name + "\n");
                         os.flush();
                         chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[发送文件：" + name + "]");
                     } else System.out.println("文件不存在,或已有文件发送/接收中");
@@ -180,7 +188,7 @@ public class MySocket {
                     (CurSocket.getInputStream(), StandardCharsets.UTF_8));
             while (true) {
                 String mess = br.readLine();
-                if (mess.matches("^##f.*")) {
+                if (mess.matches("^##F.*")) {
                     FileRecv(mess.substring(3));
                 } else {
                     CheckTimeDur(LastChatDate, GetCurTime());
@@ -198,7 +206,7 @@ public class MySocket {
         if (isMe) {
             System.out.println(mess);
         } else {
-            for (int i = 0; i < 30 - GetStrLength(mess); i++) System.out.print(" ");
+            for (int i = 0; i < 50 - GetStrLength(mess); i++) System.out.print(" ");
             System.out.print(mess);
             System.out.println(":对方");
         }
@@ -211,7 +219,7 @@ public class MySocket {
 
     private void CheckTimeDur(Date star, Date end) {
         if (star == null || Duration.between(star.toInstant(), end.toInstant()).toMinutes() > 5) {
-            System.out.println("\n    [" + formatter.format(end) + "]");
+            System.out.println("\n               [" + formatter.format(end) + "]");
         }
     }
 
@@ -221,7 +229,7 @@ public class MySocket {
         ArrayList<ChatRecord.ChatMessage> records = chatRecord.records;
         for (int i = 0; i < records.size(); i++) {
             CheckTimeDur(tempLastDate, records.get(i).msgDate);
-            tempLastDate =records.get(i).msgDate;
+            tempLastDate = records.get(i).msgDate;
             ShowMessage(records.get(i).content, records.get(i).isMe);
         }
     }
@@ -250,8 +258,8 @@ public class MySocket {
         isFileSend = true;
         try {
             try {
-                File file = new File("LinuxChat_data/"+CurSocket.getInetAddress().getHostAddress()+"/"+name);
-                if(!file.exists())file.getParentFile().mkdirs();
+                File file = new File("LinuxChat_data/" + CurSocket.getInetAddress().getHostAddress() + "/" + name);
+                if (!file.exists()) file.getParentFile().mkdirs();
                 socket = new Socket(CurSocket.getInetAddress().getHostAddress(), fileSendPort, null, fileRecvPort);
                 din = new DataInputStream(socket.getInputStream());
                 fout = new FileOutputStream(file);
@@ -263,14 +271,14 @@ public class MySocket {
                     fout.write(inputByte, 0, length);
                     fout.flush();
                 }
-                System.out.println("文件(" + name + ")已接收");
-                chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "文件(" + name + ")已接收");
+                System.out.println("[文件" + name + "已接收]");
+                chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[文件" + name + "已接收]");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 new BufferedWriter(new OutputStreamWriter(CurSocket.getOutputStream(),
                         StandardCharsets.UTF_8)) {{
-                    write("文件已接收\n");
+                    write("[文件" + name + "已接收]\n");
                     flush();
                 }};
                 if (fout != null) fout.close();
@@ -295,9 +303,9 @@ public class MySocket {
             try {
                 server = new ServerSocket(fileSendPort);
                 socket = server.accept();
-                if(isDir){
-                    toZip(file,socket.getOutputStream());
-                }else {
+                if (isDir) {
+                    toZip(file, socket.getOutputStream());
+                } else {
                     out = new DataOutputStream(socket.getOutputStream());
                     fin = new FileInputStream(file);
                     while ((length = fin.read(sendByte, 0, sendByte.length)) > 0) {
@@ -324,7 +332,7 @@ public class MySocket {
         return tmp.length();
     }
 
-    public void toZip(File sFile, OutputStream out)throws RuntimeException {
+    public void toZip(File sFile, OutputStream out) throws RuntimeException {
         ZipOutputStream zos = null;
         try {
             zos = new ZipOutputStream(out);
@@ -348,21 +356,32 @@ public class MySocket {
             zos.putNextEntry(new ZipEntry(name));
             int len;
             FileInputStream in = new FileInputStream(sourceFile);
-            while ((len = in.read(buf,0,buf.length)) != -1) {
+            while ((len = in.read(buf, 0, buf.length)) != -1) {
                 zos.write(buf, 0, len);
             }
             zos.closeEntry();
             in.close();
-        }
-        else {
+        } else {
             File[] listFiles = sourceFile.listFiles();
             if (listFiles == null || listFiles.length == 0) {
                 zos.putNextEntry(new ZipEntry(name + "/"));
                 zos.closeEntry();
-            }
-            else {
-                for (File file : listFiles){compress(file, zos, name + "/" + file.getName()); }
+            } else {
+                for (File file : listFiles) {
+                    compress(file, zos, name + "/" + file.getName());
+                }
             }
         }
+    }
+
+    private void ShowPort() {
+        String str =
+                "-----------端口信息----------" +
+                        "\n等待连接端口:" + serverPort +
+                        "\n主动连接端口:" + connectPort +
+                        "\n文件发送端口:" + fileSendPort +
+                        "\n文件接收端口:" + fileRecvPort +
+                        "\n---------------------------";
+        System.out.println(str);
     }
 }
