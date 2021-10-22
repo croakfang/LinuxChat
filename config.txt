@@ -1,0 +1,273 @@
+{
+  "Note_1": "本地接收连接所用的端口",
+  "serverPort": 16059,
+  "Note_2": "主动连接所用的端口",
+  "connectPort": 16060,
+  "Note_3": "文件发送所用端口",
+  "fileSendPort": 16061,
+  "Note_4": "文件接收所用端口",
+  "fileRecvPort": 16062,
+  "Note_5": "以下是聊天记录",
+  "chatRecord": [
+    {
+      "ID": "127.0.0.1",
+      "record": [
+        {
+          "msgDate": "Oct 22, 2021 12:30:34 AM",
+          "isMe": true,
+          "content": "##f龙一方.docx"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:32:04 AM",
+          "isMe": true,
+          "content": "##f龙一方.docx"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:34:40 AM",
+          "isMe": true,
+          "content": "##f龙一方.docx"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:36:21 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:31:12 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:33:36 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:37:22 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:41:43 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:41:48 AM",
+          "isMe": true,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:41:50 AM",
+          "isMe": false,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:43:52 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:44:47 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:44:55 AM",
+          "isMe": true,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:45:21 AM",
+          "isMe": false,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:47:26 AM",
+          "isMe": true,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:49:43 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:53:41 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:54:32 AM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:54:32 AM",
+          "isMe": false,
+          "content": "文件已接收"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:15:41 PM",
+          "isMe": true,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:15:46 PM",
+          "isMe": true,
+          "content": "以上"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:16:49 PM",
+          "isMe": true,
+          "content": "一"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:20:41 PM",
+          "isMe": true,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:20:51 PM",
+          "isMe": true,
+          "content": "23"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:20:53 PM",
+          "isMe": true,
+          "content": "1111"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:02 PM",
+          "isMe": true,
+          "content": "231231"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:13 PM",
+          "isMe": true,
+          "content": "大声道"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:38 PM",
+          "isMe": false,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:41 PM",
+          "isMe": false,
+          "content": "1212"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:44 PM",
+          "isMe": false,
+          "content": "应用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:22:20 PM",
+          "isMe": false,
+          "content": "应"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:22:26 PM",
+          "isMe": false,
+          "content": "用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:39:28 PM",
+          "isMe": true,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:39:31 PM",
+          "isMe": true,
+          "content": "1121"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:39:33 PM",
+          "isMe": true,
+          "content": "456465"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:41:46 PM",
+          "isMe": true,
+          "content": "y"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:41:49 PM",
+          "isMe": true,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:08 PM",
+          "isMe": true,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:11 PM",
+          "isMe": true,
+          "content": "用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:14 PM",
+          "isMe": true,
+          "content": "应用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:16 PM",
+          "isMe": true,
+          "content": "大赛的里那是"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:18 PM",
+          "isMe": true,
+          "content": "阿凡达卡萨丁河南省"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:25 PM",
+          "isMe": false,
+          "content": "用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:27 PM",
+          "isMe": false,
+          "content": "应用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:32 PM",
+          "isMe": false,
+          "content": "dasdasd"
+        },
+        {
+          "msgDate": "Oct 22, 2021 1:12:24 PM",
+          "isMe": false,
+          "content": "[发送文件：新建文件夹.zip]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 1:14:28 PM",
+          "isMe": true,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 1:14:30 PM",
+          "isMe": false,
+          "content": "4564"
+        },
+        {
+          "msgDate": "Oct 22, 2021 1:14:54 PM",
+          "isMe": true,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 1:14:54 PM",
+          "isMe": false,
+          "content": "文件已接收"
+        },
+        {
+          "msgDate": "Oct 22, 2021 1:20:02 PM",
+          "isMe": false,
+          "content": "[发送文件：新建文件夹.zip]"
+        }
+      ]
+    }
+  ]
+}

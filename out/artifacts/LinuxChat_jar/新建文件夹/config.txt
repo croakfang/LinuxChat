@@ -1,0 +1,168 @@
+{
+  "Note_1": "本地接收连接所用的端口",
+  "serverPort": 16057,
+  "Note_2": "主动连接所用的端口",
+  "connectPort": 16058,
+  "Note_3": "文件发送所用端口",
+  "fileSendPort": 16061,
+  "Note_4": "文件接收所用端口",
+  "fileRecvPort": 16062,
+  "Note_5": "以下是聊天记录",
+  "chatRecord": [
+    {
+      "ID": "127.0.0.1",
+      "record": [
+        {
+          "msgDate": "Oct 22, 2021 9:49:43 AM",
+          "isMe": false,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:53:41 AM",
+          "isMe": false,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:53:41 AM",
+          "isMe": false,
+          "content": "文件已接收"
+        },
+        {
+          "msgDate": "Oct 22, 2021 9:54:32 AM",
+          "isMe": false,
+          "content": "[发送文件：龙一方.docx]"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:15:41 PM",
+          "isMe": false,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:15:46 PM",
+          "isMe": false,
+          "content": "以上"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:16:49 PM",
+          "isMe": false,
+          "content": "一"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:20:44 PM",
+          "isMe": false,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:20:51 PM",
+          "isMe": false,
+          "content": "23"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:20:53 PM",
+          "isMe": false,
+          "content": "1111"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:02 PM",
+          "isMe": false,
+          "content": "231231"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:13 PM",
+          "isMe": false,
+          "content": "大声道"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:38 PM",
+          "isMe": true,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:41 PM",
+          "isMe": true,
+          "content": "1212"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:21:44 PM",
+          "isMe": true,
+          "content": "应用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:22:20 PM",
+          "isMe": true,
+          "content": "应"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:22:26 PM",
+          "isMe": true,
+          "content": "用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:39:28 PM",
+          "isMe": false,
+          "content": "123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:39:31 PM",
+          "isMe": false,
+          "content": "1121"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:39:33 PM",
+          "isMe": false,
+          "content": "456465"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:41:46 PM",
+          "isMe": false,
+          "content": "y"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:41:49 PM",
+          "isMe": false,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:08 PM",
+          "isMe": false,
+          "content": "123123"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:11 PM",
+          "isMe": false,
+          "content": "用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:14 PM",
+          "isMe": false,
+          "content": "应用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:16 PM",
+          "isMe": false,
+          "content": "大赛的里那是"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:18 PM",
+          "isMe": false,
+          "content": "阿凡达卡萨丁河南省"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:25 PM",
+          "isMe": true,
+          "content": "用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:27 PM",
+          "isMe": true,
+          "content": "应用"
+        },
+        {
+          "msgDate": "Oct 22, 2021 12:44:32 PM",
+          "isMe": true,
+          "content": "dasdasd"
+        }
+      ]
+    }
+  ]
+}
