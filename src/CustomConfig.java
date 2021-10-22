@@ -1,32 +1,32 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
 
 public class CustomConfig {
-    private final String Note_1 = "本地接收连接所用的端口";
+    @SerializedName("本地接收连接所用的端口")
     public int serverPort = 16059;
-    private final String Note_2 = "主动连接所用的端口";
+    @SerializedName("主动连接所用的端口")
     public int connectPort = 16060;
-    private final String Note_3 = "文件发送所用端口";
+    @SerializedName("文件发送所用端口")
     public int fileSendPort = 16061;
-    private final String Note_4 = "文件接收所用端口";
+    @SerializedName("文件接收所用端口")
     public int fileRecvPort = 16062;
-    private final String Note_5 = "以下是聊天记录";
-    public ArrayList<ChatRecord> chatRecord = new ArrayList<ChatRecord>();
 
     public boolean HasConfig(){
-        return new File("config.txt").exists();
+        return new File("LinuxChat_data/config.ini").exists();
     }
 
     public void SaveToFile(){
         try {
+            File file = new File("LinuxChat_data/config.ini");
+            if(!file.exists())file.getParentFile().mkdirs();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String OutStr = gson.toJson(this);
-            BufferedWriter out = new BufferedWriter(new FileWriter("config.txt"));
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(OutStr);
             out.flush();
         } catch (IOException e) {
@@ -39,7 +39,7 @@ public class CustomConfig {
         if(HasConfig()) {
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                BufferedReader in = new BufferedReader(new FileReader("config.txt"));
+                BufferedReader in = new BufferedReader(new FileReader("LinuxChat_data/config.ini"));
                 String inStr = "";
                 int num = 0;
                 char ch;
@@ -52,7 +52,6 @@ public class CustomConfig {
                 this.connectPort = temp.connectPort;
                 this.fileSendPort = temp.fileSendPort;
                 this.fileRecvPort = temp.fileRecvPort;
-                this.chatRecord = temp.chatRecord;
 
             } catch (Exception e) {
                 SaveToFile();
@@ -61,15 +60,28 @@ public class CustomConfig {
             }
         }
         else {
-            System.out.println("首次运行,创建配置文件config.txt");
+            System.out.println("首次运行,创建配置文件config.ini");
             SaveToFile();
         }
     }
 
     public ArrayList<ChatMessage> GetChatRecord(String id){
-        for(int i=0;i<chatRecord.size();i++){
-            if(chatRecord.get(i).ID .equals(id))
-            return chatRecord.get(i).record;
+        File file = new File("LinuxChat_data/"+id+"/ChatRecord.txt");
+        if(file.exists()){
+            try {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                BufferedReader in = new BufferedReader(new FileReader("LinuxChat_data/"+id+"/ChatRecord.txt"));
+                String inStr = "";
+                int num = 0;
+                char ch;
+                while ((num = in.read()) != -1) {
+                    ch = (char) num;
+                    inStr += ch;
+                }
+                ChatRecord record = gson.fromJson(inStr,new ChatRecord().getClass());
+            }catch (Exception e){
+
+            }
         }
         return new ArrayList<ChatMessage>();
     }
