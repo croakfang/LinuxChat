@@ -1,5 +1,5 @@
 public class HelpInfo {
-static String Version = "V0.5";
+static String Version = "V0.6";
 static String Title =
             " ------------------------------------------------------------ "+"\n"+
             "|   _      _                       ____  _             _     |"+"\n"+
