@@ -26,7 +26,7 @@ public class MySocket {
     private CustomConfig config;
     private ChatRecord chatRecord;
     private boolean isFileSend;
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
     private Date LastChatDate = null;
 
 
