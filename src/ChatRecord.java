@@ -41,9 +41,9 @@ public class ChatRecord {
         return new ChatRecord(id, new ArrayList<>());
     }
 
-    public void SaveChatRecord(String id,boolean isMe,String content){
-        records.add(new ChatMessage(new Date(System.currentTimeMillis()),isMe,content));
-        while (records.size()>50){
+    public void SaveChatRecord(String id,boolean isMe,String content,CustomConfig config){
+        records.add(new ChatMessage(new Date(System.currentTimeMillis()), isMe, content));
+        while (records.size()>Math.abs(config.maxMagSave)){
             records.remove(0);
         }
         File file = new File("LinuxChat_data/"+id+"/ChatRecord.txt");

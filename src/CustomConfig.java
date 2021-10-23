@@ -13,6 +13,11 @@ public class CustomConfig {
     public int fileSendPort = 16061;
     @SerializedName("文件接收所用端口")
     public int fileRecvPort = 16062;
+    @SerializedName("最大聊天记录保存条数")
+    public int maxMagSave = 100;
+    @SerializedName("最大聊天记录显示条数")
+    public int maxMagShow = 50;
+
 
     public boolean HasConfig() {
         return new File("LinuxChat_data/config.ini").exists();
@@ -51,6 +56,8 @@ public class CustomConfig {
                 this.connectPort = temp.connectPort;
                 this.fileSendPort = temp.fileSendPort;
                 this.fileRecvPort = temp.fileRecvPort;
+                this.maxMagShow = temp.maxMagShow;
+                this.maxMagSave = temp.maxMagSave;
                 in.close();
             } catch (Exception e) {
                 SaveToFile();

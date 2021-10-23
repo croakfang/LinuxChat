@@ -5,7 +5,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -24,39 +23,44 @@ public class MySocket {
     private int serverPort = 16060;
     private int fileSendPort = 16061;
     private int fileRecvPort = 16062;
+    private CustomConfig config;
     private ChatRecord chatRecord;
     private boolean isFileSend;
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
-    Date LastChatDate = null;
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+    private Date LastChatDate = null;
 
 
     public void Initialization() {
-        CustomConfig config = new CustomConfig();
+        config = new CustomConfig();
         config.GetConfig();
         serverPort = config.serverPort;
         connectPort = config.connectPort;
         fileSendPort = config.fileSendPort;
         fileRecvPort = config.fileRecvPort;
-        ServerThread = new Thread(this::StartServer);
-        ConnectThread = new Thread(this::Connect);
-        ServerThread.start();
-        ConnectThread.start();
+        ServerThread = new Thread(this::StartServer) {{
+            start();
+        }};
+        ConnectThread = new Thread(this::Connect) {{
+            start();
+        }};
         System.out.println("正在等待连接,可以输入IP主动连接:");
         GetInput();
     }
 
     public void CloseConnect() {
         try {
-            CurSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            if (CurSocket != null){
+                String DesIP = CurSocket.getInetAddress().getHostAddress();
+                System.out.println("与" + DesIP + "的聊天已结束");
+                CurSocket.close();
+                CurSocket = null;
+            }
+        } catch (IOException e) {}
         ServerThread = null;
         ConnectThread = null;
         chatRecord = null;
-        String DesIP = CurSocket.getInetAddress().getHostAddress();
-        System.out.println("与" + DesIP + "的聊天已结束");
-        CurSocket = null;
+
+
         System.exit(0);
     }
 
@@ -76,7 +80,7 @@ public class MySocket {
                     return;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println("服务器初始化失败");
+                    System.out.println("服务器初始化失败,请检查端口占用");
                     CloseConnect();
                 }
             }
@@ -150,9 +154,9 @@ public class MySocket {
                 CloseConnect();
             } else if (inputNext.matches("^##R")) {
                 ChatRecord.GetUserList();
-            }else if (inputNext.matches("^##D.*")) {
+            } else if (inputNext.matches("^##D.*")) {
                 ChatRecord.RemoveUserList(inputNext.substring(3));
-            }else
+            } else
                 inputLevel = CurSocket == null ? 1 : 2;
         }
     }
@@ -169,20 +173,20 @@ public class MySocket {
                 if (temp.matches("^##F.*")) {
                     String name = FileSend(temp.substring(3));
                     if (!name.equals("")) {
-                        os.write("[发送文件：" + name + "]" + "\n");
+                        String tmp = "[发送文件：" + name + "]";
+                        os.write(tmp + "\n");
                         os.write("##F" + name + "\n");
                         os.flush();
-                        chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[发送文件：" + name + "]");
+                        chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, tmp, config);
                     } else System.out.println("文件不存在,或已有文件发送/接收中");
-                } else if(temp.matches("^##S.*")){
+                } else if (temp.matches("^##S.*")) {
                     SearchByChat(temp.substring(3));
-                }else if(temp.matches("^##T.*")){
+                } else if (temp.matches("^##T.*")) {
                     SearchByTime(temp.substring(3));
-                }
-                else {
+                } else {
                     os.write(temp + "\n");
                     os.flush();
-                    chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, temp);
+                    chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, temp, config);
                 }
             }
         } catch (IOException e) {
@@ -201,8 +205,8 @@ public class MySocket {
                     FileRecv(mess.substring(3));
                 } else {
                     CheckTimeDur(LastChatDate, GetCurTime());
-                    ShowMessage(mess, false);
-                    chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), false, mess);
+                    ShowMessage(mess, false,false);
+                    chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), false, mess, config);
                 }
             }
         } catch (Exception e) {
@@ -210,7 +214,8 @@ public class MySocket {
         }
     }
 
-    private void ShowMessage(String mess, boolean isMe) {
+    private void ShowMessage(String mess, boolean isMe,boolean isRecord) {
+        if(!isRecord)
         LastChatDate = GetCurTime();
         if (isMe) {
             System.out.println(mess);
@@ -237,9 +242,14 @@ public class MySocket {
         Date tempLastDate = null;
         ArrayList<ChatRecord.ChatMessage> records = chatRecord.records;
         for (ChatRecord.ChatMessage record : records) {
+
+            if (records.size() > Math.abs(config.maxMagShow))
+                if (records.indexOf(record) < Math.abs(config.maxMagShow))
+                    continue;
+
             CheckTimeDur(tempLastDate, record.Date);
             tempLastDate = record.Date;
-            ShowMessage(record.content, record.isMe);
+            ShowMessage(record.content, record.isMe,true);
         }
     }
 
@@ -280,16 +290,17 @@ public class MySocket {
                     fout.write(inputByte, 0, length);
                     fout.flush();
                 }
-                System.out.println("[文件" + name + "已接收]");
-                chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, "[文件" + name + "已接收]");
-            } catch (Exception e) {
-                e.printStackTrace();
+                String tmp = "[文件" + name + "已接收]";
+                System.out.println(tmp);
+                chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, tmp, config);
+
             } finally {
                 new BufferedWriter(new OutputStreamWriter(CurSocket.getOutputStream(),
                         StandardCharsets.UTF_8)) {{
                     write("[文件" + name + "已接收]\n");
                     flush();
                 }};
+
                 if (fout != null) fout.close();
                 if (din != null) din.close();
                 if (socket != null) socket.close();
@@ -394,30 +405,31 @@ public class MySocket {
         System.out.println(str);
     }
 
-    private void SearchByChat(String str){
-        if(str.equals("")){
+    private void SearchByChat(String str) {
+        if (str.equals("")) {
             System.out.println("请输入有效内容");
             return;
-        };
+        }
+        ;
         System.out.println("-----查找结果-----");
         SimpleDateFormat format = new SimpleDateFormat("[yyyy/MM/dd HH:mm]");
-        for(ChatRecord.ChatMessage msg:chatRecord.records){
-            if(msg.content.contains(str)){
-                System.out.println(format.format(msg.Date)+(msg.isMe?"你：":"对方：")+msg.content);
+        for (ChatRecord.ChatMessage msg : chatRecord.records) {
+            if (msg.content.contains(str)) {
+                System.out.println(format.format(msg.Date) + (msg.isMe ? "你：" : "对方：") + msg.content);
             }
         }
         System.out.println("------------------");
     }
 
-    private void SearchByTime(String str){
+    private void SearchByTime(String str) {
         System.out.println("-----查找结果-----");
-        SimpleDateFormat Format= new SimpleDateFormat("yyyy/MM/dd");
+        SimpleDateFormat Format = new SimpleDateFormat("yyyy/MM/dd");
         SimpleDateFormat format = new SimpleDateFormat("[yyyy/MM/dd HH:mm]");
         try {
             Date date = Format.parse(str);
-            for(ChatRecord.ChatMessage msg:chatRecord.records){
-                if(Duration.between(msg.Date.toInstant(),date.toInstant()).toDays()<1){
-                    System.out.println(format.format(msg.Date)+(msg.isMe?"你：":"对方：")+msg.content);
+            for (ChatRecord.ChatMessage msg : chatRecord.records) {
+                if (Duration.between(msg.Date.toInstant(), date.toInstant()).toDays() < 1) {
+                    System.out.println(format.format(msg.Date) + (msg.isMe ? "你：" : "对方：") + msg.content);
                 }
             }
         } catch (ParseException e) {
