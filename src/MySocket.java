@@ -1,9 +1,12 @@
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 
+@SuppressWarnings("BusyWait")
 public class MySocket {
     public Thread ServerThread;
     public Thread ConnectThread;
@@ -18,21 +21,73 @@ public class MySocket {
     public void Initialization() {
         config = new CustomConfig();
         config.GetConfig();
-        ServerThread = new Thread(this::StartServer) {{ start();}};
-        ConnectThread = new Thread(this::Connect) {{start();}};
+        ServerThread = new Thread(this::StartServer) {{
+            start();
+        }};
+        ConnectThread = new Thread(this::Connect) {{
+            start();
+        }};
+        new Thread(this::NetFind).start();
         System.out.println("正在等待连接,可以输入IP主动连接:");
         MsgProcess.GetInput(this);
     }
 
+    public void NetFind() {
+        if (!config.findEnable) return;
+        try {
+            InetAddress findIP = InetAddress.getByName(config.findAddr);
+            MulticastSocket socket = new MulticastSocket(config.findPort);
+            socket.setTimeToLive(2);
+            socket.joinGroup(findIP);
+            GetLocalIP();
+            new Thread(() -> {
+                try {
+                ArrayList<String> findList = GetLocalIP();
+                byte[] arb = new byte[12];
+                DatagramPacket pak = new DatagramPacket(arb, arb.length,findIP,config.findPort);
+                    while (CurSocket == null) {
+                        socket.receive(pak);
+                        String tmp = pak.getAddress().getHostAddress()+ new String(pak.getData()).trim();
+                        if(!findList.contains(tmp)){
+                            findList.add(tmp);
+                            System.out.println("[发现局域网用户:"+tmp+"]");
+                        }
+                    }
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    socket.close();
+                }
+            }).start();
+
+            while (CurSocket == null) {
+                try {
+                    String data = ":" + config.serverPort;
+                    DatagramPacket pak = new DatagramPacket(data.getBytes(StandardCharsets.UTF_8), data.length(),findIP,config.findPort);
+                    socket.send(pak);
+                    Thread.sleep(3000);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
     public void CloseConnect() {
         try {
-            if (CurSocket != null){
+            if (CurSocket != null) {
                 String DesIP = CurSocket.getInetAddress().getHostAddress();
                 System.out.println("与" + DesIP + "的聊天已结束");
                 CurSocket.close();
                 CurSocket = null;
             }
-        } catch (IOException e) {}
+        } catch (IOException ignored) {
+        }
         ServerThread = null;
         ConnectThread = null;
         chatRecord = null;
@@ -77,7 +132,7 @@ public class MySocket {
                 }
 
                 System.out.println("正在尝试与[" + strArr[0] + ":" + port + "]" + "进行连接");
-                Socket socket = new Socket(strArr[0], port, null, config.connectPort);
+                Socket socket = new Socket(strArr[0], port);
 
                 if (CurSocket == null) {
                     CurSocket = socket;
@@ -107,7 +162,9 @@ public class MySocket {
     }
 
     public void Chat() {
-        new Thread(this::Listen){{start();}};
+        new Thread(this::Listen) {{
+            start();
+        }};
 
         try {
             BufferedWriter os = new BufferedWriter
@@ -119,16 +176,15 @@ public class MySocket {
                     String name = FileSend(temp.substring(3));
                     if (!name.equals("")) {
                         String tmp = "[发送文件：" + name + "]";
-                        os.write(tmp + "\n");
-                        os.write("##F" + name + "\n");
+                        os.write(tmp + "\n" + "##F" + name + "\n");
                         os.flush();
                         chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, tmp, config);
                     } else System.out.println("文件不存在,或已有文件发送/接收中");
                 } else if (temp.matches("^##S.*")) {
-                    MsgProcess.SearchByChat(temp.substring(3),chatRecord);
+                    MsgProcess.SearchByChat(temp.substring(3), chatRecord);
 
                 } else if (temp.matches("^##T.*")) {
-                    MsgProcess.SearchByTime(temp.substring(3),chatRecord);
+                    MsgProcess.SearchByTime(temp.substring(3), chatRecord);
 
                 } else {
                     os.write(temp + "\n");
@@ -152,8 +208,8 @@ public class MySocket {
                     FileRecv(mess.substring(3));
                 } else {
                     MsgProcess.CheckTimeDur(LastChatDate, MsgProcess.GetCurTime());
-                        MsgProcess.ShowMessage(mess, false);
-                        LastChatDate = MsgProcess.GetCurTime();
+                    MsgProcess.ShowMessage(mess, false);
+                    LastChatDate = MsgProcess.GetCurTime();
                     chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), false, mess, config);
                 }
             }
@@ -164,10 +220,9 @@ public class MySocket {
 
     private String FileSend(String info) {
         File file = new File(info);
-        Boolean isDir = file.isDirectory();
+        boolean isDir = file.isDirectory();
         if (file.exists() && !isFileSend) {
-            new Thread(){{
-
+            new Thread(() -> {
                 int length;
                 byte[] sendByte = new byte[1024];
                 ServerSocket server = null;
@@ -201,7 +256,7 @@ public class MySocket {
                     System.out.println("文件发送失败");
                 }
                 isFileSend = false;
-            }}.start();
+            }).start();
             return file.getName() + (file.isDirectory() ? ".zip" : "");
         }
         return "";
@@ -209,8 +264,7 @@ public class MySocket {
 
     private void FileRecv(String name) {
         if (!isFileSend) {
-            new Thread(){{
-
+            new Thread(() -> {
                 byte[] inputByte = new byte[1024];
                 int length;
                 DataInputStream din = null;
@@ -222,8 +276,7 @@ public class MySocket {
                         File file = new File("LinuxChat_data/" + CurSocket.getInetAddress().getHostAddress() + "/" + name);
                         if (!file.exists()) file.getParentFile().mkdirs();
 
-                        socket = new Socket(CurSocket.getInetAddress().getHostAddress(),
-                                config.fileSendPort, null, config.fileRecvPort);
+                        socket = new Socket(CurSocket.getInetAddress().getHostAddress(), config.fileSendPort);
 
                         din = new DataInputStream(socket.getInputStream());
                         fout = new FileOutputStream(file);
@@ -254,11 +307,31 @@ public class MySocket {
                     System.out.println("接收失败");
                 }
                 isFileSend = false;
-            }}.start();
+            }).start();
         } else System.out.println("已有文件发送/接收中");
     }
 
+    private ArrayList<String> GetLocalIP() throws SocketException {
+        ArrayList<String> out = new ArrayList<>();
+        Enumeration<NetworkInterface> allNetworkInterfaces =
+                NetworkInterface.getNetworkInterfaces();
+        NetworkInterface networkInterface = null;
 
+        while (allNetworkInterfaces.hasMoreElements()) {
+            networkInterface = allNetworkInterfaces.nextElement();
+            Enumeration<InetAddress> allInetAddress =
+                    networkInterface.getInetAddresses();
 
+            InetAddress ipAddress = null;
+
+            while (allInetAddress.hasMoreElements()) {
+                ipAddress = allInetAddress.nextElement();
+                if (ipAddress instanceof Inet4Address) {
+                    out.add(ipAddress.getHostAddress()+":"+config.serverPort);
+                }
+            }
+        }
+        return out;
+    }
 
 }

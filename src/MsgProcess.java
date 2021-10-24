@@ -12,11 +12,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
+@SuppressWarnings("BusyWait")
 public class MsgProcess {
     public static String inputNext;
     public static int inputLevel = -1;
-    private static Scanner scanner = new Scanner(System.in);
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
     public static void toZip(File sFile, OutputStream out) throws RuntimeException {
         ZipOutputStream zos = null;
@@ -65,7 +66,6 @@ public class MsgProcess {
             System.out.println("请输入有效内容");
             return;
         }
-        ;
         System.out.println("-----查找结果-----");
         SimpleDateFormat format = new SimpleDateFormat("[yyyy/MM/dd HH:mm]");
         for (ChatRecord.ChatMessage msg : chatRecord.records) {

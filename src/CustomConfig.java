@@ -4,22 +4,21 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
 
 public class CustomConfig {
     @SerializedName("本地接收连接所用的端口")
     public int serverPort = 16059;
-    @SerializedName("主动连接所用的端口")
-    public int connectPort = 16060;
     @SerializedName("文件发送所用端口")
     public int fileSendPort = 16061;
-    @SerializedName("文件接收所用端口")
-    public int fileRecvPort = 16062;
     @SerializedName("最大聊天记录保存条数")
     public int maxMagSave = 100;
     @SerializedName("最大聊天记录显示条数")
     public int maxMagShow = 50;
     @SerializedName("网络发现所用端口")
-    public int findPort = 16063;
+    public int findPort = 16059;
+    @SerializedName("网络发现所用组播地址")
+    public String findAddr = "239.0.1.160";
     @SerializedName("启用网络发现功能")
     public boolean findEnable = true;
 
@@ -48,14 +47,12 @@ public class CustomConfig {
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 BufferedReader in = new BufferedReader(new FileReader("LinuxChat_data/config.ini"));
-                String inStr = "";
-                int num = 0;
-                char ch;
+                StringBuilder inStr = new StringBuilder();
+                int num;
                 while ((num = in.read()) != -1) {
-                    ch = (char) num;
-                    inStr += ch;
+                    inStr.append((char) num);
                 }
-                CustomConfig temp = gson.fromJson(inStr, this.getClass());
+                CustomConfig temp = gson.fromJson(inStr.toString(), this.getClass());
                 mergeObject(temp,this);
                 in.close();
             } catch (Exception e) {
@@ -73,29 +70,29 @@ public class CustomConfig {
         String str =
                 "-----------端口信息----------" +
                         "\n等待连接端口:" + serverPort +
-                        "\n主动连接端口:" + connectPort +
                         "\n文件发送端口:" + fileSendPort +
-                        "\n文件接收端口:" + fileRecvPort +
                         "\n网络发现端口:" + findPort +
+                        "\n网络发现组播地址:" + findAddr +
+                        "\n网络发现启用:" + findEnable +
                         "\n---------------------------";
         System.out.println(str);
     }
 
-    public <CustomConfig> void mergeObject(CustomConfig origin, CustomConfig destination) {
+    public void mergeObject(CustomConfig origin, CustomConfig destination) {
         if (origin == null || destination == null)
             return;
         if (!origin.getClass().equals(destination.getClass()))
             return;
         Field[] fields = origin.getClass().getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
+        for (Field field : fields) {
             try {
-                fields[i].setAccessible(true);
-                Object value = fields[i].get(origin);
+                field.setAccessible(true);
+                Object value = field.get(origin);
                 if (null != value) {
-                    fields[i].set(destination, value);
+                    field.set(destination, value);
                 }
-                fields[i].setAccessible(false);
-            } catch (Exception e) {
+                field.setAccessible(false);
+            } catch (Exception ignored) {
             }
         }
     }
