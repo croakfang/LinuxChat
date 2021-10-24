@@ -1,16 +1,8 @@
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Scanner;
 
 public class MySocket {
     public Thread ServerThread;
@@ -18,14 +10,12 @@ public class MySocket {
     public Socket CurSocket;
     public CustomConfig config;
 
-    private ChatRecord chatRecord;
-    private boolean isFileSend;
-    private SimpleDateFormat formatter;
-    private Date LastChatDate = null;
+    protected ChatRecord chatRecord;
+    protected boolean isFileSend;
+    protected Date LastChatDate = null;
 
 
     public void Initialization() {
-        formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
         config = new CustomConfig();
         config.GetConfig();
         ServerThread = new Thread(this::StartServer) {{ start();}};
@@ -33,8 +23,6 @@ public class MySocket {
         System.out.println("正在等待连接,可以输入IP主动连接:");
         MsgProcess.GetInput(this);
     }
-
-
 
     public void CloseConnect() {
         try {
@@ -111,16 +99,12 @@ public class MySocket {
         System.out.print("来自 " + DesIP + "的用户想要建立连接，确认吗？(y/n)");
         if (MsgProcess.GetNextInput(2).equals("y")) {
             System.out.println("-----------------------" + DesIP + "-----------------------");
-            CheckChatRecord();
-            CheckTimeDur(LastChatDate, GetCurTime());
-            LastChatDate = GetCurTime();
+            MsgProcess.CheckChatRecord(this);
+            MsgProcess.CheckTimeDur(LastChatDate, MsgProcess.GetCurTime());
+            LastChatDate = MsgProcess.GetCurTime();
             Chat();
         } else CloseConnect();
     }
-
-
-
-
 
     public void Chat() {
         new Thread(this::Listen){{start();}};
@@ -167,51 +151,14 @@ public class MySocket {
                 if (mess.matches("^##F.*")) {
                     FileRecv(mess.substring(3));
                 } else {
-                    CheckTimeDur(LastChatDate, GetCurTime());
-                    ShowMessage(mess, false,false);
+                    MsgProcess.CheckTimeDur(LastChatDate, MsgProcess.GetCurTime());
+                        MsgProcess.ShowMessage(mess, false);
+                        LastChatDate = MsgProcess.GetCurTime();
                     chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), false, mess, config);
                 }
             }
         } catch (Exception e) {
             CloseConnect();
-        }
-    }
-
-    private void ShowMessage(String mess, boolean isMe,boolean isRecord) {
-        if(!isRecord)
-        LastChatDate = GetCurTime();
-        if (isMe) {
-            System.out.println(mess);
-        } else {
-            for (int i = 0; i < 50 - MsgProcess.GetStrLength(mess); i++) System.out.print(" ");
-            System.out.print(mess);
-            System.out.println(":对方");
-        }
-    }
-
-    private Date GetCurTime() {
-        return new Date(System.currentTimeMillis());
-    }
-
-    private void CheckTimeDur(Date star, Date end) {
-        if (star == null || Duration.between(star.toInstant(), end.toInstant()).toMinutes() > 5) {
-            System.out.println("\n               [" + formatter.format(end) + "]");
-        }
-    }
-
-    private void CheckChatRecord() {
-        chatRecord = ChatRecord.GetChatRecord(CurSocket.getInetAddress().getHostAddress());
-        Date tempLastDate = null;
-        ArrayList<ChatRecord.ChatMessage> records = chatRecord.records;
-        for (ChatRecord.ChatMessage record : records) {
-
-            if (records.size() > Math.abs(config.maxMagShow))
-                if (records.indexOf(record) < Math.abs(config.maxMagShow))
-                    continue;
-
-            CheckTimeDur(tempLastDate, record.Date);
-            tempLastDate = record.Date;
-            ShowMessage(record.content, record.isMe,true);
         }
     }
 

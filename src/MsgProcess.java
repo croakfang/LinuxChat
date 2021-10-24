@@ -8,13 +8,15 @@ import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
 public class MsgProcess {
-    private static Scanner scanner = new Scanner(System.in);
     public static String inputNext;
     public static int inputLevel = -1;
+    private static Scanner scanner = new Scanner(System.in);
+    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 
     public static void toZip(File sFile, OutputStream out) throws RuntimeException {
         ZipOutputStream zos = null;
@@ -58,7 +60,7 @@ public class MsgProcess {
         }
     }
 
-    public static void SearchByChat(String str,ChatRecord chatRecord) {
+    public static void SearchByChat(String str, ChatRecord chatRecord) {
         if (str.equals("")) {
             System.out.println("请输入有效内容");
             return;
@@ -74,7 +76,7 @@ public class MsgProcess {
         System.out.println("------------------");
     }
 
-    public static void SearchByTime(String str,ChatRecord chatRecord) {
+    public static void SearchByTime(String str, ChatRecord chatRecord) {
         System.out.println("-----查找结果-----");
         SimpleDateFormat Format = new SimpleDateFormat("yyyy/MM/dd");
         SimpleDateFormat format = new SimpleDateFormat("[yyyy/MM/dd HH:mm]");
@@ -126,6 +128,45 @@ public class MsgProcess {
                 ChatRecord.RemoveUserList(inputNext.substring(3));
             } else
                 inputLevel = (mySocket.CurSocket == null ? 1 : 2);
+        }
+    }
+
+    public static void ShowMessage(String mess, boolean isMe) {
+
+        if (isMe) {
+            System.out.println(mess);
+        } else {
+            for (int i = 0; i < 50 - MsgProcess.GetStrLength(mess); i++) System.out.print(" ");
+            System.out.print(mess);
+            System.out.println(":对方");
+        }
+    }
+
+    public static void CheckTimeDur(Date star, Date end) {
+        if (star == null || Duration.between(star.toInstant(), end.toInstant()).toMinutes() > 5) {
+            System.out.println("\n               [" + formatter.format(end) + "]");
+        }
+    }
+
+    public static Date GetCurTime() {
+        return new Date(System.currentTimeMillis());
+    }
+
+
+
+    public static void CheckChatRecord(MySocket msk) {
+        msk.chatRecord = ChatRecord.GetChatRecord(msk.CurSocket.getInetAddress().getHostAddress());
+        Date tempLastDate = null;
+        ArrayList<ChatRecord.ChatMessage> records = msk.chatRecord.records;
+        for (ChatRecord.ChatMessage record : records) {
+
+            if (records.size() > Math.abs(msk.config.maxMagShow))
+                if (records.indexOf(record) < Math.abs(msk.config.maxMagShow))
+                    continue;
+
+            MsgProcess.CheckTimeDur(tempLastDate, record.Date);
+            tempLastDate = record.Date;
+            MsgProcess.ShowMessage(record.content, record.isMe);
         }
     }
 }
