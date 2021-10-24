@@ -3,6 +3,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
+import java.lang.reflect.Field;
 
 public class CustomConfig {
     @SerializedName("本地接收连接所用的端口")
@@ -17,7 +18,10 @@ public class CustomConfig {
     public int maxMagSave = 100;
     @SerializedName("最大聊天记录显示条数")
     public int maxMagShow = 50;
-
+    @SerializedName("网络发现所用端口")
+    public int findPort = 16063;
+    @SerializedName("启用网络发现功能")
+    public boolean findEnable = true;
 
     public boolean HasConfig() {
         return new File("LinuxChat_data/config.ini").exists();
@@ -52,24 +56,48 @@ public class CustomConfig {
                     inStr += ch;
                 }
                 CustomConfig temp = gson.fromJson(inStr, this.getClass());
-                this.serverPort = temp.serverPort;
-                this.connectPort = temp.connectPort;
-                this.fileSendPort = temp.fileSendPort;
-                this.fileRecvPort = temp.fileRecvPort;
-                this.maxMagShow = temp.maxMagShow;
-                this.maxMagSave = temp.maxMagSave;
+                mergeObject(temp,this);
                 in.close();
             } catch (Exception e) {
                 SaveToFile();
-                System.out.println("读取配置文件失败");
+                System.out.println("读取配置文件失败(配置文件非末行需要后加逗号)");
                 e.printStackTrace();
             }
         } else {
-            System.out.println("首次运行,创建配置文件config.ini");
+            System.out.println("首次运行,创建配置文件LinuxChat_data/config.ini");
             SaveToFile();
         }
     }
 
+    public void ShowPort() {
+        String str =
+                "-----------端口信息----------" +
+                        "\n等待连接端口:" + serverPort +
+                        "\n主动连接端口:" + connectPort +
+                        "\n文件发送端口:" + fileSendPort +
+                        "\n文件接收端口:" + fileRecvPort +
+                        "\n网络发现端口:" + findPort +
+                        "\n---------------------------";
+        System.out.println(str);
+    }
 
+    public <CustomConfig> void mergeObject(CustomConfig origin, CustomConfig destination) {
+        if (origin == null || destination == null)
+            return;
+        if (!origin.getClass().equals(destination.getClass()))
+            return;
+        Field[] fields = origin.getClass().getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                fields[i].setAccessible(true);
+                Object value = fields[i].get(origin);
+                if (null != value) {
+                    fields[i].set(destination, value);
+                }
+                fields[i].setAccessible(false);
+            } catch (Exception e) {
+            }
+        }
+    }
 }
 
