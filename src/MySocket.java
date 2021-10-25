@@ -178,6 +178,7 @@ public class MySocket {
                         String tmp = "[发送文件：" + name + "]";
                         os.write(tmp + "\n" + "##F" + name + "\n");
                         os.flush();
+                        System.out.println(tmp);
                         chatRecord.SaveChatRecord(CurSocket.getInetAddress().getHostAddress(), true, tmp, config);
                     } else System.out.println("文件不存在,或已有文件发送/接收中");
                 } else if (temp.matches("^##S.*")) {
