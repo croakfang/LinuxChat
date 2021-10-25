@@ -36,7 +36,7 @@ public class MySocket {
         try {
             InetAddress findIP = InetAddress.getByName(config.findAddr);
             MulticastSocket socket = new MulticastSocket(config.findPort);
-            socket.setTimeToLive(2);
+            socket.setTimeToLive(128);
             socket.joinGroup(findIP);
             socket.setLoopbackMode(false);
             new Thread(() -> {

@@ -17,7 +17,7 @@ public class CustomConfig {
     @SerializedName("网络发现所用端口")
     public int findPort = 16060;
     @SerializedName("网络发现所用组播地址")
-    public String findAddr = "239.0.0.160";
+    public String findAddr = "224.0.2.160";
     @SerializedName("启用网络发现功能")
     public boolean findEnable = true;
 
