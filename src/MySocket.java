@@ -2,7 +2,6 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 
@@ -39,7 +38,7 @@ public class MySocket {
             MulticastSocket socket = new MulticastSocket(config.findPort);
             socket.setTimeToLive(2);
             socket.joinGroup(findIP);
-            GetLocalIP();
+            socket.setLoopbackMode(false);
             new Thread(() -> {
                 try {
                 ArrayList<String> findList = GetLocalIP();
@@ -53,9 +52,9 @@ public class MySocket {
                             System.out.println("[发现局域网用户:"+tmp+"]");
                         }
                     }
+                    socket.leaveGroup(findIP);
                     socket.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
                     socket.close();
                 }
             }).start();
@@ -67,16 +66,13 @@ public class MySocket {
                     socket.send(pak);
                     Thread.sleep(3000);
                 }
-                catch (Exception e){
-                    e.printStackTrace();
+                catch (Exception ignored){
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
 
     }
-
 
     public void CloseConnect() {
         try {
@@ -126,10 +122,12 @@ public class MySocket {
                 if (CurSocket != null) return;
 
                 int port = strArr.length > 1 ? Integer.parseInt(strArr[1]) : config.serverPort;
-                if (config.serverPort == port) {
+                ArrayList<String> findList = GetLocalIP();
+                if(findList.contains(strArr[0] + ":" + port)){
                     System.out.println("地址或端口无效,请重新输入");
                     continue;
                 }
+
 
                 System.out.println("正在尝试与[" + strArr[0] + ":" + port + "]" + "进行连接");
                 Socket socket = new Socket(strArr[0], port);

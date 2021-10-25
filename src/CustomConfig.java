@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
 
 public class CustomConfig {
     @SerializedName("本地接收连接所用的端口")
@@ -16,9 +15,9 @@ public class CustomConfig {
     @SerializedName("最大聊天记录显示条数")
     public int maxMagShow = 50;
     @SerializedName("网络发现所用端口")
-    public int findPort = 16059;
+    public int findPort = 16060;
     @SerializedName("网络发现所用组播地址")
-    public String findAddr = "239.0.1.160";
+    public String findAddr = "239.0.0.160";
     @SerializedName("启用网络发现功能")
     public boolean findEnable = true;
 
