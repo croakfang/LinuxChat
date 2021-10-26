@@ -1,3 +1,5 @@
+import com.sun.corba.se.spi.activation.Server;
+
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -33,45 +35,60 @@ public class MySocket {
 
     public void NetFind() {
         if (!config.findEnable) return;
+        ArrayList<String> findList = GetLocalIP();
         try {
             InetAddress findIP = InetAddress.getByName(config.findAddr);
-            MulticastSocket socket = new MulticastSocket(config.findPort);
-            socket.setTimeToLive(128);
-            socket.joinGroup(findIP);
-            socket.setLoopbackMode(false);
-            new Thread(() -> {
-                try {
-                ArrayList<String> findList = GetLocalIP();
-                byte[] arb = new byte[12];
-                DatagramPacket pak = new DatagramPacket(arb, arb.length,findIP,config.findPort);
-                    while (CurSocket == null) {
-                        socket.receive(pak);
-                        String tmp = pak.getAddress().getHostAddress()+ new String(pak.getData()).trim();
-                        if(!findList.contains(tmp)){
-                            findList.add(tmp);
-                            System.out.println("[发现局域网用户:"+tmp+"]");
-                        }
-                    }
-                    socket.leaveGroup(findIP);
-                    socket.close();
-                } catch (IOException e) {
-                    socket.close();
-                }
-            }).start();
-
+            new Thread(() -> NetBeFind(findIP)).start();
             while (CurSocket == null) {
+                String data = "##N" + config.serverPort;
                 try {
-                    String data = ":" + config.serverPort;
-                    DatagramPacket pak = new DatagramPacket(data.getBytes(StandardCharsets.UTF_8), data.length(),findIP,config.findPort);
-                    socket.send(pak);
+                    InetAddress.getByName(config.findAddr);
+                    for (String s : findList) {
+                        InetAddress tmp = InetAddress.getByName(s);
+                        DatagramSocket datagramSocket = new DatagramSocket(config.findPort, tmp);
+                        DatagramPacket pak = new DatagramPacket(data.getBytes(StandardCharsets.UTF_8), data.length(), findIP, config.findPort);
+                        datagramSocket.send(pak);
+                        datagramSocket.close();
+                    }
                     Thread.sleep(3000);
-                }
-                catch (Exception ignored){
+                } catch (Exception ignored) {
                 }
             }
+
         } catch (Exception ignored) {
         }
 
+    }
+
+    public void NetBeFind(InetAddress findIP){
+        MulticastSocket socket = null;
+        try {
+            socket = new MulticastSocket(config.findPort);
+            socket.setTimeToLive(128);
+            socket.joinGroup(findIP);
+            socket.setLoopbackMode(false);
+            ArrayList<String> findList = GetLocalIP();
+            for (int i = 0; i < findList.size(); i++)
+                findList.set(i, findList.get(i) + ":" + config.serverPort);
+            byte[] arb = new byte[12];
+            DatagramPacket pak = new DatagramPacket(arb, arb.length);
+            while (CurSocket == null) {
+                socket.receive(pak);
+                if (new String(pak.getData()).contains("##N")) {
+                    String tmp = pak.getAddress().getHostAddress() + ":" +
+                            new String(pak.getData()).substring(3).trim();
+                    if (!findList.contains(tmp)) {
+                        findList.add(tmp);
+                        System.out.println("[发现局域用户:" + tmp + "]");
+                    }
+                }
+            }
+            socket.leaveGroup(findIP);
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            if(socket!=null)socket.close();
+        }
     }
 
     public void CloseConnect() {
@@ -123,7 +140,7 @@ public class MySocket {
 
                 int port = strArr.length > 1 ? Integer.parseInt(strArr[1]) : config.serverPort;
                 ArrayList<String> findList = GetLocalIP();
-                if(findList.contains(strArr[0] + ":" + port)){
+                if (findList.contains(strArr[0] + ":" + port)) {
                     System.out.println("地址或端口无效,请重新输入");
                     continue;
                 }
@@ -310,10 +327,15 @@ public class MySocket {
         } else System.out.println("已有文件发送/接收中");
     }
 
-    private ArrayList<String> GetLocalIP() throws SocketException {
+    public ArrayList<String> GetLocalIP() {
         ArrayList<String> out = new ArrayList<>();
         Enumeration<NetworkInterface> allNetworkInterfaces =
-                NetworkInterface.getNetworkInterfaces();
+                null;
+        try {
+            allNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
+        } catch (SocketException e) {
+            return new ArrayList<>();
+        }
         NetworkInterface networkInterface = null;
 
         while (allNetworkInterfaces.hasMoreElements()) {
@@ -326,7 +348,7 @@ public class MySocket {
             while (allInetAddress.hasMoreElements()) {
                 ipAddress = allInetAddress.nextElement();
                 if (ipAddress instanceof Inet4Address) {
-                    out.add(ipAddress.getHostAddress()+":"+config.serverPort);
+                    out.add(ipAddress.getHostAddress());
                 }
             }
         }

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 public class CustomConfig {
     @SerializedName("本地接收连接所用的端口")
@@ -65,15 +66,19 @@ public class CustomConfig {
         }
     }
 
-    public void ShowPort() {
-        String str =
-                "-----------端口信息----------" +
-                        "\n等待连接端口:" + serverPort +
-                        "\n文件发送端口:" + fileSendPort +
-                        "\n网络发现端口:" + findPort +
-                        "\n网络发现组播地址:" + findAddr +
-                        "\n网络发现启用:" + findEnable +
-                        "\n---------------------------";
+    public void ShowPort(MySocket socket) {
+        StringBuilder str = new StringBuilder();
+        str.append("-----------端口信息----------");
+        str.append("\n等待连接端口:").append(serverPort);
+        str.append("\n文件发送端口:").append(fileSendPort);
+        str.append("\n网络发现端口:").append(findPort);
+        str.append("\n网络发现组播地址:").append(findAddr);
+        str.append("\n网络发现启用:").append(findEnable);
+        str.append("\n本地网卡地址:");
+        ArrayList<String> LIPList = socket.GetLocalIP();
+        for(String s:LIPList)
+            str.append("\n").append(s);
+        str.append("\n---------------------------");
         System.out.println(str);
     }
 

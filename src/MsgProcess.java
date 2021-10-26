@@ -119,7 +119,7 @@ public class MsgProcess {
             if (inputNext.matches("^##H")) {
                 HelpInfo.ShowHelp();
             } else if (inputNext.matches("^##P")) {
-                mySocket.config.ShowPort();
+                mySocket.config.ShowPort(mySocket);
             } else if (inputNext.matches("^##Q")) {
                 mySocket.CloseConnect();
             } else if (inputNext.matches("^##R")) {
@@ -151,8 +151,6 @@ public class MsgProcess {
     public static Date GetCurTime() {
         return new Date(System.currentTimeMillis());
     }
-
-
 
     public static void CheckChatRecord(MySocket msk) {
         msk.chatRecord = ChatRecord.GetChatRecord(msk.CurSocket.getInetAddress().getHostAddress());
